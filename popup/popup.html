@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div id="app">
+    <!-- Header -->
+    <div class="header">
+      <div class="header-left">
+        <div class="logo">C</div>
+        <span class="title">Claude Monitor</span>
+      </div>
+      <div id="statusBadge" class="status-badge">
+        <span class="status-dot"></span>
+        <span class="status-text">Loading...</span>
+      </div>
+    </div>
+
+    <!-- Login prompt (hidden by default) -->
+    <div id="loginPrompt" class="login-prompt hidden">
+      <div class="login-icon">🔒</div>
+      <p>Please log in to claude.ai first</p>
+      <button id="loginBtn" class="btn-primary">Open claude.ai</button>
+    </div>
+
+    <!-- Error state -->
+    <div id="errorState" class="error-state hidden">
+      <p id="errorMessage"></p>
+      <button id="retryBtn" class="btn-secondary">Retry</button>
+    </div>
+
+    <!-- Usage section -->
+    <div id="usageSection" class="section hidden">
+      <div id="usageBars"></div>
+    </div>
+
+    <!-- Status section -->
+    <div id="statusSection" class="section hidden">
+      <div class="section-label">SERVICE STATUS</div>
+      <div id="statusGrid" class="status-grid"></div>
+    </div>
+
+    <!-- Incidents -->
+    <div id="incidentsSection" class="section hidden">
+      <div class="section-label">ACTIVE INCIDENTS</div>
+      <div id="incidentsList"></div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      <span id="lastUpdated">Loading...</span>
+      <div class="footer-actions">
+        <button id="settingsBtn" class="btn-icon" title="Settings">⚙</button>
+        <button id="refreshBtn" class="btn-icon" title="Refresh">↻</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

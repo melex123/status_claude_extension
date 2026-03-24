@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Claude Monitor — Settings</title>
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="logo">C</div>
+      <h1>Claude Monitor Settings</h1>
+    </div>
+
+    <!-- Refresh Interval -->
+    <div class="card">
+      <h2>Refresh Interval</h2>
+      <p class="desc">How often to fetch usage and status data</p>
+      <select id="refreshInterval">
+        <option value="1">Every 1 minute</option>
+        <option value="2">Every 2 minutes</option>
+        <option value="5" selected>Every 5 minutes</option>
+        <option value="10">Every 10 minutes</option>
+        <option value="15">Every 15 minutes</option>
+        <option value="30">Every 30 minutes</option>
+      </select>
+    </div>
+
+    <!-- Notifications -->
+    <div class="card">
+      <h2>Notifications</h2>
+      <p class="desc">Get notified when usage approaches limits</p>
+
+      <div class="toggle-row">
+        <label for="notifEnabled">Enable notifications</label>
+        <input type="checkbox" id="notifEnabled" checked>
+      </div>
+
+      <div id="thresholdSettings">
+        <div class="threshold-group">
+          <label>Warning threshold</label>
+          <div class="input-row">
+            <input type="number" id="threshold1" min="1" max="100" value="80">
+            <span class="unit">%</span>
+          </div>
+        </div>
+        <div class="threshold-group">
+          <label>Critical threshold</label>
+          <div class="input-row">
+            <input type="number" id="threshold2" min="1" max="100" value="95">
+            <span class="unit">%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Organization -->
+    <div class="card" id="orgCard">
+      <h2>Organization</h2>
+      <p class="desc">Select which Claude organization to monitor</p>
+      <select id="orgSelector">
+        <option value="">Auto-detect</option>
+      </select>
+    </div>
+
+    <!-- Save -->
+    <div class="actions">
+      <button id="saveBtn" class="btn-primary">Save Settings</button>
+      <span id="saveStatus" class="save-status"></span>
+    </div>
+  </div>
+
+  <script src="options.js"></script>
+</body>
+</html>

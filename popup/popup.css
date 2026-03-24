@@ -1,0 +1,356 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  width: 360px;
+  background: #0d0d1a;
+  color: #e0e0e0;
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+#app {
+  padding: 16px;
+}
+
+/* --- Header --- */
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.logo {
+  width: 26px;
+  height: 26px;
+  background: #d97706;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: #000;
+}
+
+.title {
+  font-weight: 600;
+  font-size: 14px;
+  letter-spacing: -0.01em;
+}
+
+.status-badge {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 600;
+  background: rgba(34, 197, 94, 0.15);
+  color: #22c55e;
+}
+
+.status-badge.degraded {
+  background: rgba(245, 158, 11, 0.15);
+  color: #f59e0b;
+}
+
+.status-badge.outage {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+}
+
+.status-badge .status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+/* --- Sections --- */
+
+.section {
+  margin-bottom: 14px;
+}
+
+.section-label {
+  font-size: 12px;
+  color: #777;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* --- Usage Bars --- */
+
+.usage-bar-item {
+  margin-bottom: 12px;
+}
+
+.usage-bar-item:last-child {
+  margin-bottom: 0;
+}
+
+.usage-bar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 5px;
+}
+
+.usage-bar-label {
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.usage-bar-info {
+  font-size: 10px;
+  color: #888;
+}
+
+.usage-bar-track {
+  background: #1e1e3a;
+  border-radius: 4px;
+  height: 8px;
+  overflow: hidden;
+}
+
+.usage-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.6s ease, background 0.3s ease;
+  min-width: 2px;
+}
+
+/* Bar colors */
+.bar-five-hour .usage-bar-label { color: #d97706; }
+.bar-five-hour .usage-bar-fill { background: linear-gradient(90deg, #d97706, #f59e0b); }
+
+.bar-seven-day .usage-bar-label { color: #8b5cf6; }
+.bar-seven-day .usage-bar-fill { background: linear-gradient(90deg, #8b5cf6, #a78bfa); }
+
+.bar-seven-day-opus .usage-bar-label { color: #06b6d4; }
+.bar-seven-day-opus .usage-bar-fill { background: linear-gradient(90deg, #06b6d4, #22d3ee); }
+
+.bar-seven-day-sonnet .usage-bar-label { color: #10b981; }
+.bar-seven-day-sonnet .usage-bar-fill { background: linear-gradient(90deg, #10b981, #34d399); }
+
+/* Critical state */
+.usage-bar-item.critical .usage-bar-fill {
+  background: linear-gradient(90deg, #ef4444, #f87171) !important;
+}
+
+.usage-bar-item.critical .usage-bar-label {
+  color: #ef4444 !important;
+}
+
+/* --- Shimmer loading --- */
+
+.shimmer .usage-bar-fill {
+  width: 100% !important;
+  background: linear-gradient(90deg, #1e1e3a 25%, #2a2a4a 50%, #1e1e3a 75%) !important;
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* --- Status Grid --- */
+
+.status-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.status-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 0;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background 0.15s;
+}
+
+.status-item:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.status-item .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.status-item .dot.operational { background: #22c55e; }
+.status-item .dot.degraded_performance { background: #f59e0b; }
+.status-item .dot.partial_outage { background: #ef4444; }
+.status-item .dot.major_outage { background: #ef4444; }
+.status-item .dot.under_maintenance { background: #3b82f6; }
+
+.status-item .name {
+  font-size: 13px;
+  color: #ccc;
+}
+
+/* --- Incidents --- */
+
+.incident {
+  padding: 8px 10px;
+  background: rgba(239, 68, 68, 0.08);
+  border-left: 3px solid #ef4444;
+  border-radius: 4px;
+  margin-bottom: 6px;
+  font-size: 11px;
+}
+
+.incident.minor {
+  background: rgba(245, 158, 11, 0.08);
+  border-left-color: #f59e0b;
+}
+
+.incident .incident-name {
+  font-weight: 600;
+  color: #e0e0e0;
+  margin-bottom: 2px;
+}
+
+.incident .incident-status {
+  color: #888;
+  font-size: 10px;
+}
+
+/* --- Login Prompt --- */
+
+.login-prompt {
+  text-align: center;
+  padding: 32px 16px;
+}
+
+.login-icon {
+  font-size: 32px;
+  margin-bottom: 12px;
+}
+
+.login-prompt p {
+  color: #888;
+  margin-bottom: 16px;
+  font-size: 13px;
+}
+
+/* --- Error State --- */
+
+.error-state {
+  text-align: center;
+  padding: 24px 16px;
+  color: #ef4444;
+}
+
+.error-state p {
+  margin-bottom: 12px;
+  font-size: 12px;
+}
+
+/* --- Buttons --- */
+
+.btn-primary {
+  background: #d97706;
+  color: #000;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.btn-primary:hover {
+  background: #f59e0b;
+}
+
+.btn-secondary {
+  background: #1e1e3a;
+  color: #e0e0e0;
+  border: 1px solid #2a2a4a;
+  padding: 6px 16px;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.btn-secondary:hover {
+  background: #2a2a4a;
+}
+
+.btn-icon {
+  background: none;
+  border: none;
+  color: #666;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: color 0.15s, background 0.15s;
+  line-height: 1;
+}
+
+.btn-icon:hover {
+  color: #e0e0e0;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* --- Footer --- */
+
+.footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 12px;
+  border-top: 1px solid #1e1e3a;
+}
+
+#lastUpdated {
+  font-size: 10px;
+  color: #555;
+}
+
+.footer-actions {
+  display: flex;
+  gap: 4px;
+}
+
+/* --- Refresh animation --- */
+
+.refreshing {
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
