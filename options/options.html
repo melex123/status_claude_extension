@@ -54,6 +54,34 @@
       </div>
     </div>
 
+    <!-- Background Color -->
+    <div class="card">
+      <h2>Background Color</h2>
+      <p class="desc">Customize the popup background color</p>
+      <div class="color-presets">
+        <button class="color-swatch active" data-color="#0d0d1a" style="background:#0d0d1a" title="Default Dark"></button>
+        <button class="color-swatch" data-color="#0a0a0a" style="background:#0a0a0a" title="Pure Dark"></button>
+        <button class="color-swatch" data-color="#1a1a2e" style="background:#1a1a2e" title="Navy"></button>
+        <button class="color-swatch" data-color="#1a0a2e" style="background:#1a0a2e" title="Purple"></button>
+        <button class="color-swatch" data-color="#0a1a1a" style="background:#0a1a1a" title="Teal"></button>
+        <button class="color-swatch" data-color="#1a1a0a" style="background:#1a1a0a" title="Olive"></button>
+        <button class="color-swatch" data-color="#1a0a0a" style="background:#1a0a0a" title="Wine"></button>
+        <button class="color-swatch" data-color="custom" style="background:conic-gradient(red,yellow,lime,aqua,blue,magenta,red)" title="Custom"></button>
+      </div>
+      <div id="customColorRow" class="custom-color-row hidden">
+        <input type="color" id="customColor" value="#0d0d1a">
+        <span id="customColorHex" class="color-hex">#0d0d1a</span>
+      </div>
+      <div class="color-preview" id="colorPreview">
+        <div class="preview-bar">
+          <span style="color:#d97706;font-weight:600;font-size:11px;">5-Hour Limit</span>
+          <div style="background:#1e1e3a;border-radius:3px;height:6px;flex:1;margin-left:8px;overflow:hidden;">
+            <div style="background:#d97706;width:60%;height:100%;border-radius:3px;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Organization -->
     <div class="card" id="orgCard">
       <h2>Organization</h2>

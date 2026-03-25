@@ -8,6 +8,13 @@ const thresholdSettings = $('#thresholdSettings');
 const orgSelector = $('#orgSelector');
 const saveBtn = $('#saveBtn');
 const saveStatus = $('#saveStatus');
+const colorPreview = $('#colorPreview');
+const customColorRow = $('#customColorRow');
+const customColor = $('#customColor');
+const customColorHex = $('#customColorHex');
+const swatches = document.querySelectorAll('.color-swatch');
+
+let selectedBgColor = '#0d0d1a';
 
 // --- Load saved settings ---
 
@@ -17,6 +24,7 @@ async function loadSettings() {
     'notificationSettings',
     'selectedOrgId',
     'organizations',
+    'bgColor',
   ]);
 
   if (data.refreshInterval) {
@@ -31,6 +39,12 @@ async function loadSettings() {
   }
 
   toggleThresholdVisibility();
+
+  // Load background color
+  if (data.bgColor) {
+    selectedBgColor = data.bgColor;
+    updateColorUI(data.bgColor);
+  }
 
   // Populate orgs
   if (data.organizations && data.organizations.length > 0) {
@@ -54,6 +68,45 @@ function toggleThresholdVisibility() {
 
 notifEnabled.addEventListener('change', toggleThresholdVisibility);
 
+// --- Color Picker ---
+
+function updateColorUI(color) {
+  selectedBgColor = color;
+  colorPreview.style.setProperty('--preview-bg', color);
+
+  swatches.forEach((s) => {
+    const isCustom = s.dataset.color === 'custom';
+    const isMatch = s.dataset.color === color;
+    s.classList.toggle('active', isMatch || (isCustom && !document.querySelector(`.color-swatch[data-color="${color}"]`)));
+  });
+
+  // Show custom row if no preset matches
+  const hasPreset = document.querySelector(`.color-swatch[data-color="${color}"]`);
+  if (!hasPreset) {
+    customColorRow.classList.remove('hidden');
+    customColor.value = color;
+    customColorHex.textContent = color;
+  }
+}
+
+swatches.forEach((swatch) => {
+  swatch.addEventListener('click', () => {
+    const color = swatch.dataset.color;
+    if (color === 'custom') {
+      customColorRow.classList.remove('hidden');
+      updateColorUI(customColor.value);
+    } else {
+      customColorRow.classList.add('hidden');
+      updateColorUI(color);
+    }
+  });
+});
+
+customColor.addEventListener('input', () => {
+  customColorHex.textContent = customColor.value;
+  updateColorUI(customColor.value);
+});
+
 // --- Save ---
 
 saveBtn.addEventListener('click', async () => {
@@ -67,6 +120,8 @@ saveBtn.addEventListener('click', async () => {
       ],
     },
   };
+
+  settings.bgColor = selectedBgColor;
 
   const orgId = orgSelector.value;
   if (orgId) {

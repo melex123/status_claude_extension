@@ -270,6 +270,12 @@ settingsBtn.addEventListener('click', () => {
 // --- Init ---
 
 (async () => {
+  // Apply custom background color
+  const { bgColor } = await chrome.storage.local.get('bgColor');
+  if (bgColor) {
+    document.body.style.background = bgColor;
+  }
+
   // Show shimmer immediately
   usageSection.classList.remove('hidden');
   renderShimmer();
