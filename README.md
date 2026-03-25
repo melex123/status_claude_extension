@@ -1,6 +1,6 @@
 # Claude Monitor
 
-A Brave/Chrome extension that monitors your Claude usage limits and service status in real-time.
+> A Brave/Chrome extension that monitors your Claude usage limits and service status in real-time.
 
 ## Screenshots
 
@@ -17,7 +17,7 @@ A Brave/Chrome extension that monitors your Claude usage limits and service stat
 - **Auto Authentication** — Reads your session cookie from claude.ai automatically (just be logged in)
 - **Notifications** — Customizable alerts when usage approaches limits (default: 80%, 95%)
 - **Dark Mode UI** — Clean, dark-themed popup with color-coded progress bars
-- **Configurable Refresh** — Adjustable polling interval (1–30 minutes, default: 5 min)
+- **Configurable Refresh** — Adjustable polling interval (1-30 minutes, default: 5 min)
 
 ## Installation
 
@@ -35,7 +35,7 @@ A Brave/Chrome extension that monitors your Claude usage limits and service stat
 
 ## Settings
 
-Right-click the extension icon → **Options** to configure:
+Right-click the extension icon > **Options** to configure:
 - Refresh interval
 - Notification thresholds
 - Organization selector (if you have multiple)
@@ -49,3 +49,7 @@ Right-click the extension icon → **Options** to configure:
 ## Inspired by
 
 [usage4claude](https://github.com/f-is-h/usage4claude) — macOS menu bar app for Claude usage monitoring
+
+## License
+
+MIT
