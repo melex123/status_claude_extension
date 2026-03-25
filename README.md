@@ -2,6 +2,14 @@
 
 A Brave/Chrome extension that monitors your Claude usage limits and service status in real-time.
 
+## Screenshots
+
+<p align="center">
+  <img src="screenshots/popup.png" width="360" alt="Popup — Usage limits & service status">
+  &nbsp;&nbsp;
+  <img src="screenshots/settings.png" width="360" alt="Settings page">
+</p>
+
 ## Features
 
 - **Usage Limits** — Displays 5-hour, 7-day, 7-day Opus, and 7-day Sonnet utilization with progress bars and reset timers
