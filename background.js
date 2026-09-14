@@ -90,8 +90,9 @@ function barFromLimit(limit) {
   if (Object.hasOwn(KIND_LABELS, kind)) {
     ({ id, label } = KIND_LABELS[kind]);
   } else if (typeof scopeName === 'string' && scopeName) {
-    id = `seven_day_${slug(scopeName)}`;
-    label = `7-Day ${scopeName.slice(0, 40)}`; // API-sourced; also lands in notification titles
+    const name = scopeName.slice(0, 40); // API-sourced; lands in ids, storage keys and notification titles
+    id = `seven_day_${slug(name)}`;
+    label = `7-Day ${name}`;
   } else if (kind) {
     id = kind;
     label = kind;
@@ -108,7 +109,11 @@ function barFromLimit(limit) {
 function buildBars(usage, thresholds) {
   let bars;
   if (Array.isArray(usage.limits) && usage.limits.length > 0) {
-    bars = usage.limits.slice(0, MAX_BARS).map(barFromLimit).filter(Boolean);
+    bars = usage.limits.map(barFromLimit).filter(Boolean);
+    if (bars.length > MAX_BARS) {
+      // Keep the fullest ones so the badge and notifications never miss a limit that matters.
+      bars = bars.sort((a, b) => (b.percent || 0) - (a.percent || 0)).slice(0, MAX_BARS);
+    }
   } else {
     bars = LEGACY_LIMITS
       .filter(({ id }) => usage[id])
@@ -233,7 +238,7 @@ function updateBadge(data) {
 // notification fires once per crossing. It is rebuilt from the current bars,
 // so keys for limits that reset, renamed or disappeared drop out automatically.
 async function checkNotifications(data, settings) {
-  if (!settings.enabled || !data.usage || !data.usage.bars) return;
+  if (!data.usage || !data.usage.bars) return;
 
   // Read right before use: a popup-triggered refresh can overlap the alarm's.
   const { firedNotifications } = await chrome.storage.local.get('firedNotifications');
@@ -248,7 +253,7 @@ async function checkNotifications(data, settings) {
 
       const notifKey = `${bar.id}_${threshold}`;
       newFired[notifKey] = true;
-      if (fired[notifKey]) continue;
+      if (fired[notifKey] || !settings.enabled) continue;
 
       chrome.notifications.create(notifKey, {
         type: 'basic',

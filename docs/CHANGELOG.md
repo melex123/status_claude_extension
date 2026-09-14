@@ -28,7 +28,8 @@
 
 ### Security (review 2026-09-15: 0 critical)
 - Both `innerHTML` interpolations in the bar template are escaped; API-keyed maps use `Object.hasOwn` so `__proto__` / `constructor` from the API cannot resolve to prototype members
-- `limits[]` capped at 12 bars; model names truncated to 40 chars before they reach notification titles
+- `limits[]` capped at 12 bars, keeping the fullest ones so the badge cannot go green over a hidden limit; model names truncated to 40 chars before they reach ids, storage keys and notification titles
+- `firedNotifications` is rebuilt even while notifications are disabled, so a disable/enable cycle cannot leave stale keys behind
 - `orgId` URL-encoded in the usage URL
 - Session cookie value is never read anymore, only its presence
 - Residual (not applied): the `cookies` permission is still requested only for that presence check; dropping it and mapping HTTP 401 to the login prompt would remove the extension's read access to the `sessionKey` token. Left as a follow-up because it changes login detection.
