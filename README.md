@@ -12,10 +12,10 @@
 
 ## ✨ Features
 
-- 📊 **Usage Limits** — Displays 5-hour, 7-day, 7-day Opus, and 7-day Sonnet utilization with progress bars and reset timers
+- 📊 **Usage Limits** — Displays 5-hour, 7-day and every per-model weekly limit the API reports (Opus, Sonnet, Fable) as with progress bars and reset timers
 - 🟢 **Service Status** — Shows real-time status of all Claude services (claude.ai, API, Code, Platform, Government) from [status.claude.com](https://status.claude.com)
 - 🔑 **Auto Authentication** — Reads your session cookie from claude.ai automatically (just be logged in)
-- 🔔 **Notifications** — Customizable alerts when usage approaches limits (default: 80%, 95%)
+- 🔔 **Notifications** — Customizable alerts when usage approaches limits (default: 80%, 95%); the same thresholds drive the badge color and the red bar state
 - 🌙 **Dark Mode UI** — Clean, dark-themed popup with color-coded progress bars
 - ⏱️ **Configurable Refresh** — Adjustable polling interval (1–30 minutes, default: 5 min)
 

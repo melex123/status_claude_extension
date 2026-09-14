@@ -1,9 +1,23 @@
-const LIMITS = [
-  { key: 'five_hour', label: '5-Hour Limit', cssClass: 'bar-five-hour' },
-  { key: 'seven_day', label: '7-Day Limit', cssClass: 'bar-seven-day' },
-  { key: 'seven_day_opus', label: '7-Day Opus', cssClass: 'bar-seven-day-opus' },
-  { key: 'seven_day_sonnet', label: '7-Day Sonnet', cssClass: 'bar-seven-day-sonnet' },
+// Bars arrive render-ready from background.js (`monitorData.usage.bars`).
+// This map only picks colors; unknown bar ids fall back to a neutral palette.
+const BAR_COLORS = {
+  five_hour: ['#d97706', '#f59e0b'],
+  seven_day: ['#8b5cf6', '#a78bfa'],
+  seven_day_opus: ['#06b6d4', '#22d3ee'],
+  seven_day_sonnet: ['#10b981', '#34d399'],
+  seven_day_fable: ['#ec4899', '#f472b6'],
+};
+const FALLBACK_COLORS = ['#64748b', '#94a3b8'];
+const CRITICAL_COLORS = ['#ef4444', '#f87171'];
+
+// Placeholder rows while nothing is cached yet; these two limits always exist.
+const SHIMMER_BARS = [
+  { id: 'five_hour', label: '5-Hour Limit' },
+  { id: 'seven_day', label: '7-Day Limit' },
 ];
+
+// Skip the network round-trip on open when the alarm refreshed recently.
+const STALE_MS = 60_000;
 
 const STATUS_LABELS = {
   operational: 'Operational',
@@ -12,6 +26,18 @@ const STATUS_LABELS = {
   major_outage: 'Major Outage',
   under_maintenance: 'Maintenance',
 };
+
+// Shorten status.claude.com component names for the 2-column grid: drop a
+// trailing "(host)" and apply the few explicit renames. Anything else is shown
+// as-is and truncated with ellipsis by CSS.
+const SHORT_NAMES = {
+  'Claude for Government': 'Government',
+};
+
+function shortComponentName(name) {
+  const stripped = name.replace(/\s*\([^)]*\)\s*$/, '');
+  return Object.hasOwn(SHORT_NAMES, stripped) ? SHORT_NAMES[stripped] : stripped;
+}
 
 // --- DOM refs ---
 
@@ -31,6 +57,14 @@ const refreshBtn = $('#refreshBtn');
 const retryBtn = $('#retryBtn');
 const loginBtn = $('#loginBtn');
 const settingsBtn = $('#settingsBtn');
+
+// The three panels are mutually exclusive; 'loading' shows the usage section with shimmer.
+const VIEWS = {
+  loading: usageSection,
+  usage: usageSection,
+  login: loginPrompt,
+  error: errorState,
+};
 
 // --- Security: HTML escape for API-sourced strings ---
 
@@ -80,24 +114,20 @@ function formatLastUpdated(timestamp) {
 
 // --- Rendering ---
 
-function renderUsageBars(usage) {
+function renderBars(rows) {
   usageBars.innerHTML = '';
 
-  for (const limit of LIMITS) {
-    const data = usage[limit.key];
-    if (!data) continue;
-
-    // API returns utilization as percentage (0-100), not decimal
-    const pct = Math.round(data.utilization);
-    const resetTime = formatResetTime(data.resets_at);
-    const isCritical = pct >= 90;
-
+  for (const { label, info, pct, colors, extraClass = '' } of rows) {
     const item = document.createElement('div');
-    item.className = `usage-bar-item ${limit.cssClass}${isCritical ? ' critical' : ''}`;
+    item.className = `usage-bar-item${extraClass}`;
+    if (colors) {
+      item.style.setProperty('--bar-c1', colors[0]);
+      item.style.setProperty('--bar-c2', colors[1]);
+    }
     item.innerHTML = `
       <div class="usage-bar-header">
-        <span class="usage-bar-label">${limit.label}</span>
-        <span class="usage-bar-info">${pct}% used · Reset ${resetTime}</span>
+        <span class="usage-bar-label">${escapeHtml(label)}</span>
+        <span class="usage-bar-info">${escapeHtml(info)}</span>
       </div>
       <div class="usage-bar-track">
         <div class="usage-bar-fill" style="width: ${pct}%"></div>
@@ -107,73 +137,55 @@ function renderUsageBars(usage) {
   }
 }
 
+function renderUsageBars(bars) {
+  renderBars(bars.map((bar) => {
+    const pct = Math.round(bar.percent);
+    const isCritical = bar.severity === 'critical';
+    return {
+      label: bar.label,
+      info: `${pct}% used · Reset ${formatResetTime(bar.resets_at)}`,
+      pct,
+      colors: isCritical ? CRITICAL_COLORS : (Object.hasOwn(BAR_COLORS, bar.id) ? BAR_COLORS[bar.id] : FALLBACK_COLORS),
+      extraClass: isCritical ? ' critical' : '',
+    };
+  }));
+}
+
 function renderShimmer() {
-  usageBars.innerHTML = '';
-  for (const limit of LIMITS) {
-    const item = document.createElement('div');
-    item.className = `usage-bar-item ${limit.cssClass} shimmer`;
-    item.innerHTML = `
-      <div class="usage-bar-header">
-        <span class="usage-bar-label">${limit.label}</span>
-        <span class="usage-bar-info">Loading...</span>
-      </div>
-      <div class="usage-bar-track">
-        <div class="usage-bar-fill"></div>
-      </div>
-    `;
-    usageBars.appendChild(item);
-  }
+  renderBars(SHIMMER_BARS.map((bar) => ({ label: bar.label, info: 'Loading...', pct: 100, extraClass: ' shimmer' })));
 }
 
 function renderStatusGrid(components) {
   statusGrid.innerHTML = '';
 
-  // Shorten component names for compact display
-  const shortNames = {
-    'claude.ai': 'claude.ai',
-    'platform.claude.com (formerly console.anthropic.com)': 'Platform',
-    'Claude API (api.anthropic.com)': 'Claude API',
-    'Claude Code': 'Claude Code',
-    'Claude for Government': 'Government',
-  };
-
   for (const comp of components) {
-    const name = shortNames[comp.name] || comp.name;
+    const name = shortComponentName(comp.name);
+    const statusLabel = Object.hasOwn(STATUS_LABELS, comp.status) ? STATUS_LABELS[comp.status] : comp.status;
     const item = document.createElement('div');
     item.className = 'status-item';
-    item.title = `${escapeHtml(comp.name)}: ${escapeHtml(STATUS_LABELS[comp.status] || comp.status)}`;
+    item.title = `${comp.name}: ${statusLabel}`;
     item.innerHTML = `
       <span class="dot ${escapeHtml(comp.status)}"></span>
       <span class="name">${escapeHtml(name)}</span>
     `;
-    item.addEventListener('click', () => {
-      chrome.tabs.create({ url: 'https://status.claude.com' });
-    });
     statusGrid.appendChild(item);
   }
 }
 
 function renderStatusBadge(statusData) {
-  const badge = statusBadge;
-  const textEl = badge.querySelector('.status-text');
-
-  badge.classList.remove('degraded', 'outage');
-
-  if (!statusData) {
-    textEl.textContent = 'Unknown';
-    return;
-  }
-
+  const textEl = statusBadge.querySelector('.status-text');
   const indicator = statusData.indicator;
+
+  statusBadge.classList.remove('degraded', 'outage');
 
   if (indicator === 'none') {
     textEl.textContent = 'All Operational';
   } else if (indicator === 'minor' || indicator === 'degraded_performance') {
     textEl.textContent = 'Degraded';
-    badge.classList.add('degraded');
+    statusBadge.classList.add('degraded');
   } else if (indicator === 'major' || indicator === 'critical') {
     textEl.textContent = 'Outage';
-    badge.classList.add('outage');
+    statusBadge.classList.add('outage');
   } else {
     textEl.textContent = statusData.description || indicator;
   }
@@ -201,31 +213,40 @@ function renderIncidents(incidents) {
 
 // --- Main render ---
 
+function usageErrorMessage(usage) {
+  if (usage && usage.noOrg) return 'No organization found for this account';
+  if (usage && usage.bars) return 'No usage limits reported';
+  // Data written by an older background.js (no `bars`): the popup reloads from
+  // disk on open, the service worker only after an extension reload.
+  return 'Extension was updated. Reload it in chrome://extensions';
+}
+
+function viewFor(data) {
+  if (!data) return 'loading';
+  if (data.usage && data.usage.noSession) return 'login';
+  if (data.usage && data.usage.bars && data.usage.bars.length > 0) return 'usage';
+  return 'error';
+}
+
+function setView(view) {
+  for (const el of Object.values(VIEWS)) {
+    el.classList.toggle('hidden', VIEWS[view] !== el);
+  }
+  return view;
+}
+
 function render(data) {
-  if (!data) {
-    usageSection.classList.remove('hidden');
+  const view = setView(viewFor(data));
+
+  if (view === 'loading') {
     renderShimmer();
     return;
   }
-
-  // Usage
-  if (data.usage && data.usage.noSession) {
-    loginPrompt.classList.remove('hidden');
-    usageSection.classList.add('hidden');
-    errorState.classList.add('hidden');
-  } else if (data.usage && !data.usage.noOrg) {
-    loginPrompt.classList.add('hidden');
-    errorState.classList.add('hidden');
-    usageSection.classList.remove('hidden');
-    renderUsageBars(data.usage);
-  } else if (data.error) {
-    errorState.classList.remove('hidden');
-    usageSection.classList.add('hidden');
-    loginPrompt.classList.add('hidden');
-    errorMessage.textContent = data.error;
+  if (view === 'usage') renderUsageBars(data.usage.bars);
+  if (view === 'error') {
+    errorMessage.textContent = data.error || usageErrorMessage(data.usage);
   }
 
-  // Status
   if (data.status) {
     statusSection.classList.remove('hidden');
     renderStatusBadge(data.status);
@@ -233,7 +254,6 @@ function render(data) {
     renderIncidents(data.status.incidents);
   }
 
-  // Last updated
   lastUpdated.textContent = `Updated ${formatLastUpdated(data.lastUpdated)}`;
 }
 
@@ -259,6 +279,12 @@ async function doRefresh() {
 refreshBtn.addEventListener('click', doRefresh);
 retryBtn.addEventListener('click', doRefresh);
 
+statusGrid.addEventListener('click', (e) => {
+  if (e.target.closest('.status-item')) {
+    chrome.tabs.create({ url: 'https://status.claude.com' });
+  }
+});
+
 loginBtn.addEventListener('click', () => {
   chrome.tabs.create({ url: 'https://claude.ai' });
 });
@@ -270,23 +296,15 @@ settingsBtn.addEventListener('click', () => {
 // --- Init ---
 
 (async () => {
-  // Apply custom background color
-  const { bgColor } = await chrome.storage.local.get('bgColor');
+  const { bgColor, monitorData } = await chrome.storage.local.get(['bgColor', 'monitorData']);
+
   if (bgColor) {
     document.body.style.background = bgColor;
   }
 
-  // Show shimmer immediately
-  usageSection.classList.remove('hidden');
-  renderShimmer();
+  render(monitorData || null);
 
-  // Try stored data first
-  const { monitorData } = await chrome.storage.local.get('monitorData');
-
-  if (monitorData) {
-    render(monitorData);
+  if (!monitorData || Date.now() - monitorData.lastUpdated > STALE_MS) {
+    doRefresh();
   }
-
-  // Then refresh
-  doRefresh();
 })();

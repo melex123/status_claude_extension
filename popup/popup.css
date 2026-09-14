@@ -112,6 +112,7 @@ body {
 .usage-bar-label {
   font-size: 11px;
   font-weight: 600;
+  color: var(--bar-c1);
 }
 
 .usage-bar-info {
@@ -133,33 +134,15 @@ body {
   min-width: 2px;
 }
 
-/* Bar colors */
-.bar-five-hour .usage-bar-label { color: #d97706; }
-.bar-five-hour .usage-bar-fill { background: linear-gradient(90deg, #d97706, #f59e0b); }
-
-.bar-seven-day .usage-bar-label { color: #8b5cf6; }
-.bar-seven-day .usage-bar-fill { background: linear-gradient(90deg, #8b5cf6, #a78bfa); }
-
-.bar-seven-day-opus .usage-bar-label { color: #06b6d4; }
-.bar-seven-day-opus .usage-bar-fill { background: linear-gradient(90deg, #06b6d4, #22d3ee); }
-
-.bar-seven-day-sonnet .usage-bar-label { color: #10b981; }
-.bar-seven-day-sonnet .usage-bar-fill { background: linear-gradient(90deg, #10b981, #34d399); }
-
-/* Critical state */
-.usage-bar-item.critical .usage-bar-fill {
-  background: linear-gradient(90deg, #ef4444, #f87171) !important;
-}
-
-.usage-bar-item.critical .usage-bar-label {
-  color: #ef4444 !important;
-}
+/* --bar-c1 / --bar-c2 are set inline per bar by popup.js (critical bars get the red pair there too). */
+.usage-bar-fill { background: linear-gradient(90deg, var(--bar-c1), var(--bar-c2)); }
 
 /* --- Shimmer loading --- */
 
+.shimmer .usage-bar-label { color: #888; }
+
 .shimmer .usage-bar-fill {
-  width: 100% !important;
-  background: linear-gradient(90deg, #1e1e3a 25%, #2a2a4a 50%, #1e1e3a 75%) !important;
+  background: linear-gradient(90deg, #1e1e3a 25%, #2a2a4a 50%, #1e1e3a 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
 }
@@ -207,6 +190,10 @@ body {
 .status-item .name {
   font-size: 13px;
   color: #ccc;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 /* --- Incidents --- */

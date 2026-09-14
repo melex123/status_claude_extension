@@ -74,15 +74,13 @@ function updateColorUI(color) {
   selectedBgColor = color;
   colorPreview.style.setProperty('--preview-bg', color);
 
+  const preset = [...swatches].find((s) => s.dataset.color === color);
   swatches.forEach((s) => {
-    const isCustom = s.dataset.color === 'custom';
-    const isMatch = s.dataset.color === color;
-    s.classList.toggle('active', isMatch || (isCustom && !document.querySelector(`.color-swatch[data-color="${color}"]`)));
+    s.classList.toggle('active', preset ? s === preset : s.dataset.color === 'custom');
   });
 
   // Show custom row if no preset matches
-  const hasPreset = document.querySelector(`.color-swatch[data-color="${color}"]`);
-  if (!hasPreset) {
+  if (!preset) {
     customColorRow.classList.remove('hidden');
     customColor.value = color;
     customColorHex.textContent = color;
@@ -119,9 +117,8 @@ saveBtn.addEventListener('click', async () => {
         Math.min(100, Math.max(1, parseInt(threshold2.value, 10) || 95)),
       ],
     },
+    bgColor: selectedBgColor,
   };
-
-  settings.bgColor = selectedBgColor;
 
   const orgId = orgSelector.value;
   if (orgId) {
