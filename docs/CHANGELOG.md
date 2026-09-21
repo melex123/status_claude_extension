@@ -1,5 +1,15 @@
 # Changelog
 
+## [2026-09-21] - Organization follows the logged-in account
+
+### Fixed
+- Switching accounts on claude.ai no longer leaves the popup on `Usage fetch failed: HTTP 404`. `selectedOrgId` was stored once and never checked again, so after a switch every refresh asked `/usage` for an organization the new session cannot see. The org list is now fetched on every refresh and the stored choice is used only when it is in that list; otherwise the first org of the current account takes over and the Settings selector is repopulated.
+
+### Added
+- `chrome.cookies.onChanged` listener on the `sessionKey` cookie: login, logout and account switch trigger one refresh 1.5 s after the cookie burst settles, so the badge and popup follow the new account without waiting for the alarm.
+
+Verified: `node --check` on background.js, popup.js, options.js; Node `vm` harness (stale org -> first current org, valid org kept, empty list -> `noOrg`, malformed entries skipped, no cookie -> login, cookie burst -> exactly one refresh): 20/20 PASS on the fix, 4 FAIL + 1 crash on the previous background.js. Live check needs an extension reload in `chrome://extensions`.
+
 ## [2026-09-15] - Fable weekly limit, data-driven bars
 
 ### Added

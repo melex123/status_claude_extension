@@ -147,21 +147,27 @@ async function loadStatus() {
   };
 }
 
+// The org list belongs to whichever account the browser is logged into right
+// now, so it is fetched on every refresh and the stored choice is checked
+// against it. A `selectedOrgId` left over from another account would 404 on
+// `/usage` forever otherwise (switching accounts on claude.ai used to do that).
+async function resolveOrg(selectedOrgId) {
+  const orgs = (await fetchOrganizations()) || [];
+  const organizations = orgs
+    .filter((o) => o && typeof o.uuid === 'string')
+    .map((o) => ({ uuid: o.uuid, name: o.name }));
+  if (organizations.length === 0) return null;
+
+  const orgId = organizations.some((o) => o.uuid === selectedOrgId) ? selectedOrgId : organizations[0].uuid;
+  await chrome.storage.local.set({ selectedOrgId: orgId, organizations });
+  return orgId;
+}
+
 async function loadUsage(selectedOrgId, thresholds) {
   const cookie = await chrome.cookies.get({ url: CLAUDE_API_BASE, name: 'sessionKey' });
   if (!cookie) return { noSession: true };
 
-  let orgId = selectedOrgId;
-  if (!orgId) {
-    const orgs = await fetchOrganizations();
-    if (orgs && orgs.length > 0) {
-      orgId = orgs[0].uuid;
-      await chrome.storage.local.set({
-        selectedOrgId: orgId,
-        organizations: orgs.map((o) => ({ uuid: o.uuid, name: o.name })),
-      });
-    }
-  }
+  const orgId = await resolveOrg(selectedOrgId);
   if (!orgId) return { noOrg: true };
 
   const usage = await fetchUsage(orgId);
@@ -299,6 +305,19 @@ chrome.runtime.onInstalled.addListener(() => {
 chrome.runtime.onStartup.addListener(() => {
   setupAlarm();
   refreshData();
+});
+
+// Logging in, out or switching accounts on claude.ai rewrites the session
+// cookie (a removal followed by a set within milliseconds). One refresh after
+// the burst settles is enough for the popup to follow the new account without
+// waiting for the alarm.
+const SESSION_CHANGE_SETTLE_MS = 1500;
+let sessionChangeTimer = null;
+
+chrome.cookies.onChanged.addListener(({ cookie }) => {
+  if (cookie.name !== 'sessionKey' || !cookie.domain.endsWith('claude.ai')) return;
+  clearTimeout(sessionChangeTimer);
+  sessionChangeTimer = setTimeout(refreshData, SESSION_CHANGE_SETTLE_MS);
 });
 
 // Listen for messages from popup/options
